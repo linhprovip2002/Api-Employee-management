@@ -11,6 +11,10 @@ class attendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = attendance
         fields = ('date', 'time_in', 'time_out', 'note')
+class statisticalAttend(serializers.ModelSerializer):
+    class Meta:
+        model = attendance
+        fields = ('date','employee_code', 'time_in', 'time_out', 'note')
 
 
 

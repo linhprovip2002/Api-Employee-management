@@ -3,11 +3,11 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated,AllowAny
 from django.http import HttpResponse
 from rest_framework.response import Response
-from staff.api.serializers import StaffSerializer,attendanceSerializer
+from staff.api.serializers import StaffSerializer,attendanceSerializer,statisticalAttend
 from auth_app.models import Person
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
-
+import json
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -234,6 +234,31 @@ def delete_staff(request,staff_id):
 # #         serializer = StaffSerializer(attend,many=True)
 # #         return Response(serializer.data)
 from datetime import datetime
+def get_user_in_day(staff_id):
+    date = datetime.now()
+    day = date.strftime("%d")
+    month = date.strftime("%m")
+    year = date.strftime("%y")
+    attends = attendance.objects.filter(date__day=int(day),date__month=int(month),date__year=int(year)) 
+    data_user = [attends.employee_code for attend in attends]
+    if staff_id in data_user:
+        return False
+    else:
+        return True
+
+@api_view(['GET'])
+def get_attendance_by_month(request):
+    params = request.GET
+    day = params.get('day')
+    month = params.get('month')
+    year = params.get('year')
+    attends = attendance.objects.filter(date__day=int(day),date__month=int(month),date__year=int(year)) 
+    if attends:
+        serializer = statisticalAttend(attends,many=True)
+        return Response(serializer.data)
+    else:
+        return Response("no data")
+    
 @api_view(['POST'])
 
 def create_time_in(request,staff_id):
@@ -246,17 +271,20 @@ def create_time_in(request,staff_id):
     print(staff)
     attend = attendance(employee_code=staff)
     serializer = attendanceSerializer(attend,data=data_attend)
-    # attends = attendance.objects.filter(employee_code=staff_id)
-    # print(attends.values())
-    if serializer.is_valid():
-            serializer.save()
-            return Response(
-                serializer.data,
-                status=status.HTTP_200_OK
-            )
+    print(get_user_in_day(staff_id))
+    if get_user_in_day(staff_id):
+         return Response("user in day")
     else:
-            return Response(serializer.errors)
-    
+    #print(attends.values())
+        if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_200_OK
+                )
+        else:
+                return Response(serializer.errors)
+        
     # attend = attendance(employee_code=staff)
 @api_view(['PUT'])
 def update_time_out(request,staff_id):
@@ -279,5 +307,44 @@ def update_time_out(request,staff_id):
             )
     else:
             return Response(serializer.errors)
-    
-
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_attend(request,staff_id):
+    print(request.user)
+    print(staff_id)
+    person = Person.objects.get(username=request.user)
+    if person.is_admin == False:
+        return Response("you not have admin permission")
+    else:
+        attend = attendance.objects.filter(employee_code=staff_id)
+        attend.delete()
+        return Response("delete success")    
+@api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+def get_attend(request,staff_id):
+    attend = attendance.objects.filter(employee_code=staff_id)
+    date = [attend.date.strftime('%d') for attend in attend]
+    print(int(date[0]))
+    return Response("get success")
+# get user check in  day in month
+@api_view(['GET'])
+def get_attend_statistical(request,staff_id):
+    params = request.GET
+    month = params.get('month')
+    attend = attendance.objects.filter(employee_code=staff_id,date__month=int(month))
+    date = [attend.date.strftime('%d') for attend in attend]
+    print(staff_id)
+    print(month)
+    if date:
+       return Response({'date':date})
+    else:
+         return Response("no data")
+# @api_view(['GET'])
+# def get_attend_by_month(request):
+#     params = request.GET
+#     month = params.get('month')
+#     attends = attendance.objects.all()
+#     date = [attend.date.strftime('%m') for attend in attends]
+#     print(date)
+#     print(month)
+#     return Response("oke")
