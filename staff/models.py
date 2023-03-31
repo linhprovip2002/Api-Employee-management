@@ -51,7 +51,7 @@ class my_attend(BaseUserManager):
 class attendance(AbstractBaseUser):
   id_attendance = models.AutoField(primary_key=True)
   employee_code = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="attendance")
-  date = models.DateTimeField()
+  date = models.DateField()
   time_in = models.TimeField()
   time_out = models.TimeField(null=True, blank=True)
   note = models.CharField(max_length=10)

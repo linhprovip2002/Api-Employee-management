@@ -239,6 +239,7 @@ def get_user_in_day(staff_id):
     day = date.strftime("%d")
     month = date.strftime("%m")
     year = date.strftime("%y")
+    
     attends = attendance.objects.filter(date__day=int(day),date__month=int(month),date__year=int(year)) 
     data_user = [attends.employee_code for attend in attends]
     if staff_id in data_user:
@@ -247,11 +248,12 @@ def get_user_in_day(staff_id):
         return True
 
 @api_view(['GET'])
-def get_attendance_by_month(request):
+def get_attendance_by_day(request):
     params = request.GET
     day = params.get('day')
     month = params.get('month')
     year = params.get('year')
+    print("day: " + day,month,year)
     attends = attendance.objects.filter(date__day=int(day),date__month=int(month),date__year=int(year)) 
     if attends:
         serializer = statisticalAttend(attends,many=True)
@@ -263,7 +265,7 @@ def get_attendance_by_month(request):
 
 def create_time_in(request,staff_id):
     data_attend={
-            "date":datetime.now(),
+            "date":datetime.now().date(),
             "time_in":datetime.now().time(),
             "note":"test"
         }
@@ -271,42 +273,53 @@ def create_time_in(request,staff_id):
     print(staff)
     attend = attendance(employee_code=staff)
     serializer = attendanceSerializer(attend,data=data_attend)
-    print(get_user_in_day(staff_id))
-    if get_user_in_day(staff_id):
-         return Response("user in day")
-    else:
-    #print(attends.values())
-        if serializer.is_valid():
-                serializer.save()
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_200_OK
-                )
-        else:
-                return Response(serializer.errors)
-        
-    # attend = attendance(employee_code=staff)
-@api_view(['PUT'])
-def update_time_out(request,staff_id):
-    data_attend={
-            "date":datetime.now(),
-            "time_out":datetime.now().time(),
-            "note":"test"
-        }
-    staff = Staff.objects.get(employee_code=staff_id)
-    print(staff)
-    attend = attendance(employee_code=staff)
-    serializer = attendanceSerializer(attend,data=data_attend)
-    # attends = attendance.objects.filter(employee_code=staff_id)
-    # print(attends.values())
+    data = {
+        "employee_code":staff_id,
+        "first_name":staff.first_name,
+        "last_name":staff.last_name,
+        "img":staff.img,
+        "position":staff.position,
+        "department":staff.department,
+    }
     if serializer.is_valid():
             serializer.save()
             return Response(
-                serializer.data,
+                {**serializer.data,**data},
                 status=status.HTTP_200_OK
             )
     else:
             return Response(serializer.errors)
+        
+    # attend = attendance(employee_code=staff)
+@api_view(['PUT'])
+def update_time_out(request,staff_id):
+    try:
+        staff = Staff.objects.get(employee_code=staff_id)
+        attendance_record = attendance.objects.get(employee_code=staff)
+        data_attend = {
+            "time_in": attendance_record.time_in,
+            "time_out": datetime.now().time(),
+            "date": attendance_record.date,
+            "note": attendance_record.note
+        }
+        serializer = attendanceSerializer(attendance_record, data=data_attend)
+        data_staff = {
+            "employee_code": staff_id,
+            "first_name": staff.first_name,
+            "last_name": staff.last_name,
+            "img": staff.img,
+            "position": staff.position,
+            "department": staff.department,
+        }
+        if serializer.is_valid():
+            serializer.save()
+            return Response({**serializer.data,**data_staff}, status=status.HTTP_200_OK)
+        else:
+            return Response(serializer.errors)
+    except Staff.DoesNotExist:
+        return Response({"error": f"Staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+    except attendance.DoesNotExist:
+        return Response({"error": f"Attendance record for staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def delete_attend(request,staff_id):
@@ -334,9 +347,10 @@ def get_attend_statistical(request,staff_id):
     attend = attendance.objects.filter(employee_code=staff_id,date__month=int(month))
     date = [attend.date.strftime('%d') for attend in attend]
     print(staff_id)
+    staff = Staff.objects.get(employee_code=staff_id)
     print(month)
     if date:
-       return Response({'date':date})
+       return Response({'first_name':staff.first_name,'last_name':staff.last_name,'img':staff.img,'date':len(date)})
     else:
          return Response("no data")
 # @api_view(['GET'])

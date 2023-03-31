@@ -29,7 +29,8 @@ ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
      'a2f7-117-2-255-218.ap.ngrok.io',
-     'aa20-117-2-255-218.ap.ngrok.io'
+     'aa20-117-2-255-218.ap.ngrok.io',
+     'b35d-2402-800-6205-61b-c534-afb9-d039-474f.ap.ngrok.io',
     # ...
 ]
 
@@ -148,3 +149,5 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ]
 }    
+DATE_FORMAT = '%d/%m/%Y'
+TIME_FORMAT = '%H:%M:%S'

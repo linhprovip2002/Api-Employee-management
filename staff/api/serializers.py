@@ -12,9 +12,12 @@ class attendanceSerializer(serializers.ModelSerializer):
         model = attendance
         fields = ('date', 'time_in', 'time_out', 'note')
 class statisticalAttend(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='employee_code.first_name')
+    last_name = serializers.CharField(source='employee_code.last_name')
+    department = serializers.CharField(source='employee_code.department')
+    position = serializers.CharField(source='employee_code.position')
+    img = serializers.CharField(source='employee_code.img')
     class Meta:
         model = attendance
-        fields = ('date','employee_code', 'time_in', 'time_out', 'note')
-
-
+        fields = ('date','employee_code', 'time_in', 'time_out', 'note', 'first_name', 'last_name', 'department', 'position', 'img')
 
