@@ -4,15 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
-#import serializers
+# import serializers
 
-#import httpResponse
+# import httpResponse
 
 from auth_app.models import Person
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
 def register(request):
     serializer = RegisterSerializer(data=request.data)
     data = {}
@@ -25,26 +24,31 @@ def register(request):
         data['token'] = token
     else:
         data = serializer.errors
-    return Response(data)      
+    return Response(data)
+
+
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication]) 
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def logout(request):
     logout(request)
     return Response("logout success")
 
+
 @api_view(['GET'])
-@authentication_classes([TokenAuthentication]) 
+@authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def detail(request):
     print(request.user)
     person = Person.objects.get(username=request.user)
     print(person.is_admin)
-    person_values = Person.objects.filter(username=request.user).values('username', 'email', 'is_admin')
+    person_values = Person.objects.filter(
+        username=request.user).values('username', 'email', 'is_admin')
     return Response(person_values)
+
 
 @api_view(['GET'])
 def all(request):
     person = Person.objects.all()
     print(person.values)
-    return Response(person.values('username','email','password','is_admin'))
+    return Response(person.values('username', 'email', 'password', 'is_admin'))
