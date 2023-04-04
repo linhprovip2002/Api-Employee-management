@@ -29,10 +29,10 @@ ALLOWED_HOSTS = [
     '*',
     'localhost',
     '127.0.0.1',
-     'a2f7-117-2-255-218.ap.ngrok.io',
-     'aa20-117-2-255-218.ap.ngrok.io',
-     'b35d-2402-800-6205-61b-c534-afb9-d039-474f.ap.ngrok.io',
-     '10.10.58.253'
+    'a2f7-117-2-255-218.ap.ngrok.io',
+    'aa20-117-2-255-218.ap.ngrok.io',
+    'b35d-2402-800-6205-61b-c534-afb9-d039-474f.ap.ngrok.io',
+    '10.10.58.253'
     # ...
 ]
 
@@ -54,9 +54,11 @@ INSTALLED_APPS = [
     'staff',
 ]
 # CORS_ALLOWED_ORIGINS = [
-#     'https://fbf7-117-2-255-218.ap.ngrok.io'
-#     # ...
+#     '*'
 # ]
+
+CORS_ORIGIN_ALLOW_ALL = True
+
 CORS_ALLOW_CREDENTIALS = True
 AUTH_USER_MODEL = 'auth_app.Person'
 MIDDLEWARE = [
@@ -151,7 +153,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ]
-}    
+}
 DATE_FORMAT = '%d/%m/%Y'
 TIME_FORMAT = '%H:%M:%S'
 MEDIA_URL = 'media/'

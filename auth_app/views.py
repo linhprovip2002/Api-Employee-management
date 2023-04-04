@@ -16,14 +16,8 @@ def register(request):
     print(request.data.get('username'))
     person = Person.objects.filter(username=request.data.get('username'))
     if person:
-        return Response("username already exists")
+        return Response("Username already exists")
     else:
-<<<<<<< HEAD
-        data = serializer.errors
-    return Response(data)
-
-
-=======
         serializer = RegisterSerializer(data=request.data)
         data = {}
         if serializer.is_valid():
@@ -36,8 +30,8 @@ def register(request):
             return Response(data)
         else:
             return serializer.errors
-       
->>>>>>> ca296825fc47e8956eba612517432cb6f84154d5
+
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -62,14 +56,11 @@ def detail(request):
 def all(request):
     person = Person.objects.all()
     print(person.values)
-<<<<<<< HEAD
     return Response(person.values('username', 'email', 'password', 'is_admin'))
-=======
-    return Response(person.values('username','email','password','is_admin'))
+
 
 @api_view(['DELETE'])
-def detete(request,staff_id):
+def detete(request, staff_id):
     person = Person.objects.get(id=staff_id)
     person.delete()
     return Response("delete success")
->>>>>>> ca296825fc47e8956eba612517432cb6f84154d5
