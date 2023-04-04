@@ -27,7 +27,7 @@ class Staff(AbstractBaseUser):
     phone = models.IntegerField()
     department = models.CharField(max_length=50)
     age = models.IntegerField()
-    img = models.CharField(max_length=500)
+    img = models.ImageField(upload_to='images/', null=True, blank=True)
     position = models.CharField(max_length=100)
     id = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="staff")
     objects = MyUserManager()    

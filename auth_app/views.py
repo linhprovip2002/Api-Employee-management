@@ -48,3 +48,9 @@ def all(request):
     person = Person.objects.all()
     print(person.values)
     return Response(person.values('username','email','password','is_admin'))
+
+@api_view(['DELETE'])
+def detete(request,staff_id):
+    person = Person.objects.get(id=staff_id)
+    person.delete()
+    return Response("delete success")
