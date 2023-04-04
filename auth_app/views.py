@@ -14,18 +14,24 @@ from auth_app.models import Person
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 def register(request):
-    serializer = RegisterSerializer(data=request.data)
-    data = {}
-    if serializer.is_valid():
-        person = serializer.save()
-        data['status'] = "Successfully registered a new user."
-        data['email'] = person.email
-        data['username'] = person.username
-        token = Token.objects.get(user=person).key
-        data['token'] = token
+    print(request.data.get('username'))
+    person = Person.objects.filter(username=request.data.get('username'))
+    if person:
+        return Response("username already exists")
     else:
-        data = serializer.errors
-    return Response(data)      
+        serializer = RegisterSerializer(data=request.data)
+        data = {}
+        if serializer.is_valid():
+            person = serializer.save()
+            data['status'] = "Successfully registered a new user."
+            data['email'] = person.email
+            data['username'] = person.username
+            token = Token.objects.get(user=person).key
+            data['token'] = token
+            return Response(data)
+        else:
+            return serializer.errors
+       
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication]) 
 @permission_classes([IsAuthenticated])
