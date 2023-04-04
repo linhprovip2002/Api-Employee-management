@@ -49,7 +49,9 @@ def get_all_staff(request):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def update_staff(request,staff_id):
+    try:
         staff = Staff.objects.get(employee_code=staff_id)
+        
         person = Person.objects.get(username=request.user)
         if person.is_admin == False:
             return Response("you not have admin permission",status=status.HTTP_401_UNAUTHORIZED)
@@ -62,18 +64,23 @@ def update_staff(request,staff_id):
                     status=status.HTTP_200_OK
                 )
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    except:
+        return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
 @api_view(['DELETE'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_staff(request,staff_id):
+    try:
         staff = Staff.objects.get(employee_code=staff_id)
+       
         person = Person.objects.get(username=request.user)
         if person.is_admin == False:
             return Response("you not have admin permission",status=status.HTTP_401_UNAUTHORIZED)
         else:
             staff.delete()
             return Response("delete success",status=status.HTTP_200_OK)        
-
+    except:
+        return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
 # class StaffViewSet(viewsets.ModelViewSet):
 #     queryset = Staff.objects.all()
 #     permission_classes = [IsAuthenticated]
