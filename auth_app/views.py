@@ -13,20 +13,31 @@ from auth_app.models import Person
 
 @api_view(['POST'])
 def register(request):
-    serializer = RegisterSerializer(data=request.data)
-    data = {}
-    if serializer.is_valid():
-        person = serializer.save()
-        data['status'] = "Successfully registered a new user."
-        data['email'] = person.email
-        data['username'] = person.username
-        token = Token.objects.get(user=person).key
-        data['token'] = token
+    print(request.data.get('username'))
+    person = Person.objects.filter(username=request.data.get('username'))
+    if person:
+        return Response("username already exists")
     else:
+<<<<<<< HEAD
         data = serializer.errors
     return Response(data)
 
 
+=======
+        serializer = RegisterSerializer(data=request.data)
+        data = {}
+        if serializer.is_valid():
+            person = serializer.save()
+            data['status'] = "Successfully registered a new user."
+            data['email'] = person.email
+            data['username'] = person.username
+            token = Token.objects.get(user=person).key
+            data['token'] = token
+            return Response(data)
+        else:
+            return serializer.errors
+       
+>>>>>>> ca296825fc47e8956eba612517432cb6f84154d5
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -51,4 +62,14 @@ def detail(request):
 def all(request):
     person = Person.objects.all()
     print(person.values)
+<<<<<<< HEAD
     return Response(person.values('username', 'email', 'password', 'is_admin'))
+=======
+    return Response(person.values('username','email','password','is_admin'))
+
+@api_view(['DELETE'])
+def detete(request,staff_id):
+    person = Person.objects.get(id=staff_id)
+    person.delete()
+    return Response("delete success")
+>>>>>>> ca296825fc47e8956eba612517432cb6f84154d5

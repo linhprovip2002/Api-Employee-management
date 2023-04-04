@@ -9,6 +9,7 @@ urlpatterns = [
     path('detail/<str:staff_id>',views.get_detail_staff,name='detail'),
     path('list',views.get_all_staff,name='all'),
     path('detail/<str:staff_id>/update',views.update_staff,name='update'),
+    path('detail/<str:staff_id>/delete',views.delete_staff,name='delete'),
 
    
     # path('create/', views.StaffViewSet.as_view({'post':'create'}), name='create'),
