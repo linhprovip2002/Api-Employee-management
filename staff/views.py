@@ -30,12 +30,18 @@ def create(request):
 def get_detail_staff(request,staff_id):
     print(request.user)
     staff = Staff.objects.get(employee_code = staff_id)
+    if(staff == None):
+        return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
     serializer = StaffSerializer(staff)
     return Response(serializer.data)
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
 def get_all_staff(request):
+    params = request.GET
+    print(params)
     staff = Staff.objects.all()
+    if(staff == None):
+        return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
     serializer = StaffSerializer(staff,many=True)
     return Response(serializer.data)
 
