@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from rest_framework import status
 # import serializers
 
 # import httpResponse
@@ -13,23 +14,21 @@ from auth_app.models import Person
 
 @api_view(['POST'])
 def register(request):
-    print(request.data.get('username'))
-    person = Person.objects.filter(username=request.data.get('username'))
-    if person:
-        return Response("Username already exists")
+    serializer = RegisterSerializer(data=request.data)
+    if serializer.is_valid():
+        person = serializer.save()
+        token, created = Token.objects.get_or_create(user=person)
+        data = {
+            'status': 'Successfully registered a new user.',
+            'email': person.email,
+            'username': person.username,
+            'token': token
+        }
+
+        return Response(data)
     else:
-        serializer = RegisterSerializer(data=request.data)
-        data = {}
-        if serializer.is_valid():
-            person = serializer.save()
-            data['status'] = "Successfully registered a new user."
-            data['email'] = person.email
-            data['username'] = person.username
-            token = Token.objects.get(user=person).key
-            data['token'] = token
-            return Response(data)
-        else:
-            return serializer.errors
+        errors = "User is already existed"
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

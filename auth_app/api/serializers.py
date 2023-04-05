@@ -4,15 +4,17 @@ from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 
-
 class RegisterSerializer(serializers.ModelSerializer):
-    password2 = serializers.CharField(style={'input_type': 'password'}, write_only=True)
+    password2 = serializers.CharField(
+        style={'input_type': 'password'}, write_only=True)
+
     class Meta:
         model = Person
         fields = ['email', 'username', 'password', 'password2']
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
     def save(self):
         person = Person(
             email=self.validated_data['email'],
@@ -25,7 +27,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         except ValidationError as e:
             raise serializers.ValidationError(e)
         if password != password2:
-            raise serializers.ValidationError({'password': 'Passwords must match.'})
+            raise serializers.ValidationError(
+                {'password': 'Passwords must match.'})
         person.set_password(password)
         person.save()
-        return person  
+        return person
