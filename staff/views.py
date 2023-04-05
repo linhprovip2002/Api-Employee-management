@@ -262,14 +262,21 @@ def     get_attendance_by_day(request):
     day = params.get('day')
     month = params.get('month')
     year = params.get('year')
-    print("day: " + day,month,year)
-    attends = attendance.objects.filter(date__day=int(day),date__month=int(month),date__year=int(year)) 
-    if attends:
-        serializer = statisticalAttend(attends,many=True)
-        return Response(serializer.data)
+    if day:
+        attends = attendance.objects.filter(date__day=int(day),date__month=int(month),date__year=int(year)) 
+        if attends:
+            serializer = statisticalAttend(attends,many=True)
+            return Response(serializer.data)
+        else:
+            return Response("no data",status=204)
     else:
-        return Response("no data")
-    
+        print("doo day roi")
+        attends = attendance.objects.filter(date__month=int(month),date__year=int(year)) 
+        if attends:
+            serializer = statisticalAttend(attends,many=True)
+            return Response(serializer.data)
+        else:
+            return Response("no data",status=204)
 @api_view(['POST'])
 def create_time_in(request,staff_id):
     data_attend={
@@ -304,7 +311,7 @@ def create_time_in(request,staff_id):
                     status=status.HTTP_200_OK
                 )
         else:
-                return Response(serializer.errors)
+                return Response(serializer.errors,status=400)
 @api_view(['PUT'])
 def update_time_out(request,staff_id):
     try:
