@@ -369,7 +369,7 @@ def get_attend_statistical(request,staff_id):
     if date:
        return Response({'first_name':staff.first_name,'last_name':staff.last_name,'img':staff.img,'date':len(date)})
     else:
-         return Response("no data")
+         return Response("no data",status=400)
 # @api_view(['GET'])
 # def get_attend_by_month(request):
 #     params = request.GET
