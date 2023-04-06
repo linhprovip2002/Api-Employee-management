@@ -13,28 +13,33 @@ from auth_app.models import Person
 
 
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])
 def register(request):
-    print(request.data.get('username'))
-    person = Person.objects.filter(username=request.data.get('username'))
-    if person:
-        return Response("username already exists",status=400)
+    
+    # serializer = RegisterSerializer(data=request.data)
+    # if serializer.is_valid():
+    #     person = Person(email =request.data.get('email'),username= request.data.get('username'),password= request.data.get('password'))
+    #     person.set_password(request.data.get('password'))
+    #     person.save()
+
+    #     return Response("register success")
+    # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    serializer = RegisterSerializer(data=request.data)
+    print(serializer)
+    print(serializer.is_valid())
+    if serializer.is_valid():
+        person = serializer.save()
+        token, created = Token.objects.get_or_create(user=person) 
+        data = {
+            'status': 'Successfully registered a new user.',
+            'email': person.email,
+            'username': person.username,
+            'token' : token.key
+        }
+        return Response(data)
     else:
-        serializer = RegisterSerializer(data=request.data)
-        data = {}
-       
-        try:
-            
-            person1 = Person(username=request.data.get('username'),email=request.data.get('email'),password=request.data.get('password'))
-            person1.save()
-            # data['status'] = "Successfully registered a new user."
-            # data['email'] = person.email
-            # data['username'] = person.username
-            # token = Token.objects.get(user=person).key
-            # data['token'] = token
-            return Response({'register success'},status=201)
-        except ValueError as e:
-            return Response({'error': str(e)},status=400)
+        errors = "User is already existed"
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
        
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication]) 
@@ -61,6 +66,7 @@ def all(request):
 
 @api_view(['DELETE'])
 def detete(request,staff_id):
+    print("delete ne")
     person = Person.objects.get(id=staff_id)
     person.delete()
     return Response("delete success")
