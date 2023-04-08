@@ -14,7 +14,18 @@ from auth_app.models import Person
 
 @api_view(['POST'])
 def register(request):
+
+    # serializer = RegisterSerializer(data=request.data)
+    # if serializer.is_valid():
+    #     person = Person(email =request.data.get('email'),username= request.data.get('username'),password= request.data.get('password'))
+    #     person.set_password(request.data.get('password'))
+    #     person.save()
+
+    #     return Response("register success")
+    # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     serializer = RegisterSerializer(data=request.data)
+    print(serializer)
+    print(serializer.is_valid())
     if serializer.is_valid():
         person = serializer.save()
         token, created = Token.objects.get_or_create(user=person)
@@ -22,9 +33,8 @@ def register(request):
             'status': 'Successfully registered a new user.',
             'email': person.email,
             'username': person.username,
-            'token': token
+            'token': token.key
         }
-
         return Response(data)
     else:
         errors = "User is already existed"
@@ -60,6 +70,7 @@ def all(request):
 
 @api_view(['DELETE'])
 def detete(request, staff_id):
+    print("delete ne")
     person = Person.objects.get(id=staff_id)
     person.delete()
     return Response("delete success")

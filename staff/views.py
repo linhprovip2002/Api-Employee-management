@@ -39,7 +39,7 @@ def get_detail_staff(request,staff_id):
 def get_all_staff(request):
     params = request.GET
     print(params)
-    staff = Staff.objects.all()
+    staff = Staff.objects.all() 
     if(staff == None):
         return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
     serializer = StaffSerializer(staff,many=True)
