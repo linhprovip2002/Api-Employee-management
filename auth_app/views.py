@@ -11,6 +11,28 @@ from rest_framework import status
 
 from auth_app.models import Person
 
+@api_view(['POST'])
+def login(request):
+    try:
+        person = Person.objects.get(username=request.data.get('username'))
+        if person.check_password(request.data.get('password')):
+            token, created = Token.objects.get_or_create(user=person) 
+            data = {
+                'status': 'Successfully logged in user.',
+                'email': person.email,
+                'username': person.username,
+                'token' : token.key
+            }
+            return Response(data)
+        else:
+            errors = "Incorrect password"
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+    except:
+        errors = "User is not existed"
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 @api_view(['POST'])
 def register(request):
