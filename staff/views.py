@@ -36,6 +36,14 @@ def get_detail_staff(request,staff_id):
     return Response(serializer.data)
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
+def get_detail_staff_by_id(request,id):
+    staff = Staff.objects.get(id = id)
+    if(staff == None):
+        return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
+    serializer = StaffSerializer(staff)
+    return Response(serializer.data)
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
 def get_all_staff(request):
     params = request.GET
     print(params)
