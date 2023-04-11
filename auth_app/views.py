@@ -22,6 +22,7 @@ def login(request):
                 'status': 'Successfully logged in user.',
                 'email': person.email,
                 'username': person.username,
+                'id': person.id,
                 'token': token.key
             }
             return Response(data)
