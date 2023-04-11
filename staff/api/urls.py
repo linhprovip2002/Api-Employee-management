@@ -10,8 +10,8 @@ urlpatterns = [
     path('detail/user/<int:id>', views.get_detail_staff_by_id, name='detail'),
     path('list', views.get_all_staff, name='all'),
     path('detail/<str:staff_id>/update', views.update_staff, name='update'),
-    path('detail/<str:staff_id>/delete', views.delete_staff, name='delete'),
 
+    path('detail/<str:staff_id>/delete', views.delete_staff, name='delete'),
 
     # path('create/', views.StaffViewSet.as_view({'post':'create'}), name='create'),
     # path('list/', views.StaffViewSet.as_view({'get': 'list'}), name='read_all'),
