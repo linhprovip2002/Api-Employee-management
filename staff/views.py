@@ -13,17 +13,25 @@ import json
 @permission_classes([IsAuthenticated])
 def create(request):
     print(request.user)
+    person = Person.objects.get(username=request.user)
     staff = Staff(id = request.user)
-    serializer = StaffSerializer(staff,data=request.data)
-    print(serializer)
+    data = {
+        'employee_code': request.data.get('employee_code'),
+        'first_name': request.data.get('first_name'),
+        'last_name': request.data.get('last_name'),
+        'phone': request.data.get('phone'),
+        'department': request.data.get('department'),
+        'age': request.data.get('age'),
+        'img': request.data.get('img'),
+        'position': request.data.get('position'),
+        'id': person.id
+    }
+    serializer = StaffSerializer(staff,data=data)
     if serializer.is_valid():
         serializer.save()
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK
-        )
-    else:
-        return Response(serializer.errors)
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
@@ -59,18 +67,27 @@ def get_all_staff(request):
 def update_staff(request,staff_id):
     try:
         staff = Staff.objects.get(employee_code=staff_id)
-        
+        print(staff.id_id)
         person = Person.objects.get(username=request.user)
         if person.is_admin == False:
             return Response("you not have admin permission",status=status.HTTP_401_UNAUTHORIZED)
         else:
+            data = {
+                'employee_code': request.data.get('employee_code'),
+                'first_name': request.data.get('first_name'),
+                'last_name': request.data.get('last_name'),
+                'phone': request.data.get('phone'),
+                'department': request.data.get('department'),
+                'age': request.data.get('age'),
+                'img': request.data.get('img'),
+                'position': request.data.get('position'),
+                'id': staff.id_id
+            }
             serializer = StaffSerializer(staff,data=request.data)
+            serializer = StaffSerializer(staff,data=data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_200_OK
-                )
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     except:
         return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
