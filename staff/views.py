@@ -31,6 +31,17 @@ def create(request):
         serializer.save()
         return Response(serializer.data,status=status.HTTP_201_CREATED)
     return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+def detail_user_login(request):
+    print(request.user)
+    staff = Staff.objects.get(id = request.user)
+    if(staff == None):
+        return Response("staff not found",status=status.HTTP_404_NOT_FOUND)
+    serializer = StaffSerializer(staff)
+    return Response(serializer.data)
+
+
 
 
 @api_view(['GET'])
