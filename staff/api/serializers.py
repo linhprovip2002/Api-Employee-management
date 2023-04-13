@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 
 class StaffSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='person.id')
+    # id = serializers.IntegerField(source='person.id')
     class Meta:
         model = Staff
         fields = ('employee_code', 'first_name', 'last_name',

@@ -17,7 +17,7 @@ import json
 def create(request):
     print(request.user)
     person = Person.objects.get(username=request.user)
-    staff = Staff(id = request.user)
+    staff = Staff(id=request.user)
     data = {
         'employee_code': request.data.get('employee_code'),
         'first_name': request.data.get('first_name'),
@@ -29,12 +29,11 @@ def create(request):
         'position': request.data.get('position'),
         'id': person.id
     }
-    serializer = StaffSerializer(staff,data=data)
+    serializer = StaffSerializer(staff, data=data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
-    return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -52,10 +51,12 @@ def get_detail_staff(request, staff_id):
 @authentication_classes([TokenAuthentication])
 def get_detail_staff_by_id(request, id):
     staff = Staff.objects.get(id=id)
-    if (staff == None):
+    print(staff)
+    if staff:
+        serializer = StaffSerializer(staff)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
         return Response("staff not found", status=status.HTTP_404_NOT_FOUND)
-    serializer = StaffSerializer(staff)
-    return Response(serializer.data)
 
 
 @api_view(['GET'])
@@ -92,12 +93,12 @@ def update_staff(request, staff_id):
                 'position': request.data.get('position'),
                 'id': staff.id_id
             }
-            serializer = StaffSerializer(staff,data=request.data)
-            serializer = StaffSerializer(staff,data=data)
+            serializer = StaffSerializer(staff, data=request.data)
+            serializer = StaffSerializer(staff, data=data)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.data,status=status.HTTP_201_CREATED)
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     except:
         return Response("staff not found", status=status.HTTP_404_NOT_FOUND)
 
