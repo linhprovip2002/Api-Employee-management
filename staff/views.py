@@ -38,6 +38,19 @@ def create(request):
 
 @api_view(['GET'])
 @authentication_classes([TokenAuthentication])
+def detail_user_login(request):
+    # print("id:" + str(request.user.id))
+    # staff = Staff.objects.filter(id=request.user.id)
+    try:
+        staff = Staff.objects.get(id=request.user)
+        serializer = StaffSerializer(staff)
+        return Response(serializer.data)
+    except Staff.DoesNotExist:
+        return Response("staff not found", status=status.HTTP_404_NOT_FOUND)
+
+
+@ api_view(['GET'])
+@ authentication_classes([TokenAuthentication])
 def get_detail_staff(request, staff_id):
     print(request.user)
     staff = Staff.objects.get(employee_code=staff_id)
@@ -47,8 +60,8 @@ def get_detail_staff(request, staff_id):
     return Response(serializer.data)
 
 
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@ api_view(['GET'])
+@ authentication_classes([TokenAuthentication])
 def get_detail_staff_by_id(request, id):
     staff = Staff.objects.get(id=id)
     print(staff)
@@ -59,8 +72,8 @@ def get_detail_staff_by_id(request, id):
         return Response("staff not found", status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication])
+@ api_view(['GET'])
+@ authentication_classes([TokenAuthentication])
 def get_all_staff(request):
     params = request.GET
     print(params)
@@ -71,9 +84,9 @@ def get_all_staff(request):
     return Response(serializer.data)
 
 
-@api_view(['PUT'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@ api_view(['PUT'])
+@ authentication_classes([TokenAuthentication])
+@ permission_classes([IsAuthenticated])
 def update_staff(request, staff_id):
     try:
         staff = Staff.objects.get(employee_code=staff_id)
@@ -103,9 +116,9 @@ def update_staff(request, staff_id):
         return Response("staff not found", status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['DELETE'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
+@ api_view(['DELETE'])
+@ authentication_classes([TokenAuthentication])
+@ permission_classes([IsAuthenticated])
 def delete_staff(request, staff_id):
     try:
         staff = Staff.objects.get(employee_code=staff_id)
@@ -293,7 +306,7 @@ def get_user_in_day(staff_id):
         return False
 
 
-@api_view(['GET'])
+@ api_view(['GET'])
 def get_attendance_by_day(request):
     params = request.GET
     day = params.get('day')
@@ -318,7 +331,7 @@ def get_attendance_by_day(request):
             return Response("no data", status=204)
 
 
-@api_view(['POST'])
+@ api_view(['POST'])
 def create_time_in(request, staff_id):
     data_attend = {
         "date": datetime.now().date(),
@@ -354,11 +367,15 @@ def create_time_in(request, staff_id):
             return Response(serializer.errors, status=400)
 
 
-@api_view(['PUT'])
+@ api_view(['PUT'])
 def update_time_out(request, staff_id):
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
     try:
         staff = Staff.objects.get(employee_code=staff_id)
-        attendance_record = attendance.objects.get(employee_code=staff)
+        attendance_record = attendance.objects.get(
+            employee_code=staff_id, date__day=day, date__month=month, date__year=year)
         data_attend = {
             "time_in": attendance_record.time_in,
             "time_out": datetime.now().time(),
@@ -385,8 +402,8 @@ def update_time_out(request, staff_id):
         return Response({"error": f"Attendance record for staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
 
 
-@api_view(['DELETE'])
-@permission_classes([IsAuthenticated])
+@ api_view(['DELETE'])
+@ permission_classes([IsAuthenticated])
 def delete_attend(request, staff_id):
     print(request.user)
     print(staff_id)
@@ -399,7 +416,7 @@ def delete_attend(request, staff_id):
         return Response("delete success")
 
 
-@api_view(['GET'])
+@ api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 def get_attend(request, staff_id):
 
@@ -412,7 +429,7 @@ def get_attend(request, staff_id):
 # get user check in  day in month
 
 
-@api_view(['GET'])
+@ api_view(['GET'])
 def get_attend_statistical(request, staff_id):
     params = request.GET
     month = params.get('month')
