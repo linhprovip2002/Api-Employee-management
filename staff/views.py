@@ -293,7 +293,7 @@ def get_user_in_day(staff_id):
         return False
 
 @api_view(['GET'])
-def     get_attendance_by_day(request):
+def  get_attendance_by_day(request):
     params = request.GET
     day = params.get('day')
     month = params.get('month')
@@ -350,6 +350,9 @@ def create_time_in(request,staff_id):
                 return Response(serializer.errors,status=400)
 @api_view(['PUT'])
 def update_time_out(request,staff_id):
+    day = datetime.now().day
+    month = datetime.now().month
+    year = datetime.now().year
     try:
         staff = Staff.objects.get(employee_code=staff_id)
         attendance_record = attendance.objects.get(employee_code=staff)
