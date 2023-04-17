@@ -17,6 +17,8 @@ urlpatterns = [
     # path('create/', views.StaffViewSet.as_view({'post':'create'}), name='create'),
     # path('list/', views.StaffViewSet.as_view({'get': 'list'}), name='read_all'),
     # path('<str:staff_id>/', views.StaffDetailView.as_view(), name='read_one'),
+    path('attendance/statisticalbymonth',
+         views.get_attend_statistical_by_month,name="statistical_by_month"),
     path('attendance/statistical',
          views.get_attendance_by_day, name='all_attendance'),
     path('attendance/<str:staff_id>', views.get_attend, name='attendance'),
@@ -27,5 +29,6 @@ urlpatterns = [
     path('attendance/<str:staff_id>/delete',
          views.delete_attend, name='delete_attendance'),
     path('attendance/<str:staff_id>/statistical',
-         views.get_attend_statistical, name='detail_attendance'),
+         views.get_attend_statistical, name='detail_attendance'), 
+    
 ]

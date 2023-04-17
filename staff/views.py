@@ -343,7 +343,7 @@ def create_time_in(request, staff_id):
         return Response("This person has taken attendance,Do you want log out?")
     else:
         staff = Staff.objects.get(employee_code=staff_id)
-
+        print(staff.img)
         attend = attendance(employee_code=staff)
         # value_attend = attendance.objects.filter(date = datetime.now().date())
 
@@ -353,12 +353,12 @@ def create_time_in(request, staff_id):
             "employee_code": staff_id,
             "first_name": staff.first_name,
             "last_name": staff.last_name,
-            "img": str(staff.img),
+            "img":"/media/" + str(staff.img),
             "position": staff.position,
             "department": staff.department,
         }
         if serializer.is_valid():
-            serializer.save()
+            # serializer.save()
             return Response(
                 {**serializer.data, **data},
                 status=status.HTTP_200_OK
@@ -433,16 +433,23 @@ def get_attend(request, staff_id):
 def get_attend_statistical(request, staff_id):
     params = request.GET
     month = params.get('month')
-    attend = attendance.objects.filter(
-        employee_code=staff_id, date__month=int(month))
-    date = [attend.date.strftime('%d') for attend in attend]
-    print(staff_id)
-    staff = Staff.objects.get(employee_code=staff_id)
-    print(month)
-    if date:
-        return Response({'first_name': staff.first_name, 'last_name': staff.last_name, 'img': staff.img, 'date': len(date)})
+    year = params.get('year')
+    if month:
+        attends = attendance.objects.filter(
+            employee_code=staff_id, date__month=int(month), date__year=int(year))
+        if attends:
+            serializer = statisticalAttend(attends, many=True)
+            return Response(serializer.data)
+        else:
+            return Response("no data", status=204)
     else:
-        return Response("no data", status=400)
+        attends = attendance.objects.filter(
+            employee_code=staff_id, date__year=int(year))
+        if attends:
+            serializer = statisticalAttend(attends, many=True)
+            return Response(serializer.data)
+        else:
+            return Response("no data", status=204)
 # @api_view(['GET'])
 # def get_attend_by_month(request):
 #     params = request.GET
@@ -452,3 +459,40 @@ def get_attend_statistical(request, staff_id):
 #     print(date)
 #     print(month)
 #     return Response("oke")
+from django.db.models import Count
+@api_view(['GET'])
+def get_attend_statistical_by_month(request):
+    params = request.GET
+    month = params.get('month')
+    year = params.get('year')
+
+   
+    if month and year:
+       
+        month = int(month)
+        year = int(year)
+
+       
+        attends = attendance.objects.filter(date__month=month, date__year=year).values('employee_code')
+
+        total_days_in_month = datetime(year, month + 1, 1).toordinal() - datetime(year, month, 1).toordinal()
+
+   
+        result = attends.annotate(total_days=Count('date')).values('employee_code', 'total_days')
+
+        staff_data = Staff.objects.filter(employee_code__in=[attend['employee_code'] for attend in result]).values('first_name', 'last_name', 'img')
+
+        response_data = []
+        for attend in result:
+            staff = staff_data.get(employee_code=attend['employee_code'])
+            response_data.append({
+                'first_name': staff['first_name'],
+                'last_name': staff['last_name'],
+                'img': "/media/"+staff['img'],
+                'total_days': attend['total_days']
+            })
+
+        return Response(response_data)
+    else:
+        return Response("no params", status=204)
+

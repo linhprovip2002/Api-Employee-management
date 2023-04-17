@@ -42,7 +42,7 @@ if __name__ == '__main__':
 #     # port = int(os.environ.get("PORT", 8000))
 
 #     # Thêm giá trị cổng vào danh sách đối số để chạy lệnh runserver
-#     execute_from_command_line([sys.argv[0], 'runserver', f'10.10.58.253:{port}'])
+#     execute_from_command_line([sys.argv[0], 'runserver', f'192.168.43.253:{port}'])
 
 # if __name__ == '__main__':
 #     main()
