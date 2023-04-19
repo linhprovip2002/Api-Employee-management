@@ -27,7 +27,7 @@ class Staff(AbstractBaseUser):
     phone = models.IntegerField()
     department = models.CharField(max_length=50)
     age = models.IntegerField()
-    img = models.CharField(max_length=500)
+    img = models.ImageField(upload_to='images/', null=True, blank=True)
     position = models.CharField(max_length=100)
     id = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="staff")
     objects = MyUserManager()    
@@ -51,7 +51,7 @@ class my_attend(BaseUserManager):
 class attendance(AbstractBaseUser):
   id_attendance = models.AutoField(primary_key=True)
   employee_code = models.ForeignKey(Staff, on_delete=models.CASCADE, related_name="attendance")
-  date = models.DateTimeField()
+  date = models.DateField()
   time_in = models.TimeField()
   time_out = models.TimeField(null=True, blank=True)
   note = models.CharField(max_length=10)
