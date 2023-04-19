@@ -358,7 +358,7 @@ def create_time_in(request, staff_id):
             "department": staff.department,
         }
         if serializer.is_valid():
-            # serializer.save()
+            serializer.save()
             return Response(
                 {**serializer.data, **data},
                 status=status.HTTP_200_OK
