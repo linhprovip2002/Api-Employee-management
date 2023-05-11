@@ -331,6 +331,10 @@ def get_attendance_by_day(request):
             return Response("no data", status=204)
 
 
+
+
+
+
 @ api_view(['POST'])
 def create_time_in(request, staff_id):
     data_attend = {
@@ -340,7 +344,38 @@ def create_time_in(request, staff_id):
     }
     print(get_user_in_day(staff_id))
     if get_user_in_day(staff_id):
-        return Response("This person has taken attendance,Do you want log out?")
+                day = datetime.now().day
+                month = datetime.now().month
+                year = datetime.now().year
+                try:
+                    staff = Staff.objects.get(employee_code=staff_id)
+                    attendance_record = attendance.objects.get(
+                    employee_code=staff_id, date__day=day, date__month=month, date__year=year)
+                    data_attend = {
+                        "time_in": attendance_record.time_in,
+                        "time_out": datetime.now().time(),
+                        "date": attendance_record.date,
+                        "note": attendance_record.note
+                    }
+                    serializer = attendanceSerializer(attendance_record, data=data_attend)
+                    data_staff = {
+                        "employee_code": staff_id,
+                        "first_name": staff.first_name,
+                        "last_name": staff.last_name,
+                        "img":"/media/" + str(staff.img),
+                        "position": staff.position,
+                        "department": staff.department,
+                    }
+                    if serializer.is_valid():
+                        serializer.save()
+                        return Response({**serializer.data, **data_staff}, status=status.HTTP_200_OK)
+                    else:
+                        return Response(serializer.errors)
+                except Staff.DoesNotExist:
+                    return Response({"error": f"Staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+                except attendance.DoesNotExist:
+                    return Response({"error": f"Attendance record for staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
+
     else:
         staff = Staff.objects.get(employee_code=staff_id)
         print(staff.img)
@@ -367,41 +402,6 @@ def create_time_in(request, staff_id):
             return Response(serializer.errors, status=400)
 
 
-@ api_view(['PUT'])
-def update_time_out(request, staff_id):
-    day = datetime.now().day
-    month = datetime.now().month
-    year = datetime.now().year
-    try:
-        staff = Staff.objects.get(employee_code=staff_id)
-        attendance_record = attendance.objects.get(
-        employee_code=staff_id, date__day=day, date__month=month, date__year=year)
-        data_attend = {
-            "time_in": attendance_record.time_in,
-            "time_out": datetime.now().time(),
-            "date": attendance_record.date,
-            "note": attendance_record.note
-        }
-        serializer = attendanceSerializer(attendance_record, data=data_attend)
-        data_staff = {
-            "employee_code": staff_id,
-            "first_name": staff.first_name,
-            "last_name": staff.last_name,
-            "img": str(staff.img),
-            "position": staff.position,
-            "department": staff.department,
-        }
-        if serializer.is_valid():
-            serializer.save()
-            return Response({**serializer.data, **data_staff}, status=status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors)
-    except Staff.DoesNotExist:
-        return Response({"error": f"Staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
-    except attendance.DoesNotExist:
-        return Response({"error": f"Attendance record for staff with employee code {staff_id} does not exist."}, status=status.HTTP_404_NOT_FOUND)
-
-
 @ api_view(['DELETE'])
 @ permission_classes([IsAuthenticated])
 def delete_attend(request, staff_id):
@@ -419,7 +419,7 @@ def delete_attend(request, staff_id):
 @ api_view(['GET'])
 # @permission_classes([IsAuthenticated])
 def get_attend(request, staff_id):
-
+    
     attend = attendance.objects.filter(employee_code=staff_id)
     date = [attend.date.strftime('%d') for attend in attend]
     if date:
@@ -439,17 +439,34 @@ def get_attend_statistical(request, staff_id):
             employee_code=staff_id, date__month=int(month), date__year=int(year))
         if attends:
             serializer = statisticalAttend(attends, many=True)
-            return Response(serializer.data)
+            data = serializer.data
+            formatted_data = {
+            'employee_code': data[0]['employee_code'],
+            'note': data[0]['note'],
+            'first_name': data[0]['first_name'],
+            'last_name': data[0]['last_name'],
+            'department': data[0]['department'],
+            'position': data[0]['position'],
+            'img': data[0]['img'],
+            'activity_log': []}
+            total_hours = timedelta()
+            for obj in data:
+                activity = {
+                    'date': obj['date'],
+                    'time_in': obj['time_in'],
+                    'time_out': obj['time_out']
+                }
+                formatted_data['activity_log'].append(activity)
+                time_in = datetime.strptime(obj['time_in'], '%H:%M:%S.%f')
+                time_out = datetime.strptime(obj['time_out'], '%H:%M:%S.%f')
+                duration = time_out - time_in
+                total_hours += duration
+                formatted_data['total_hours'] = str(total_hours)
+            return Response(formatted_data)
         else:
-            return Response("no data", status=204)
+            return Response("no data", status=400)
     else:
-        attends = attendance.objects.filter(
-            employee_code=staff_id, date__year=int(year))
-        if attends:
-            serializer = statisticalAttend(attends, many=True)
-            return Response(serializer.data)
-        else:
-            return Response("no data", status=204)
+        return Response("no param", status=400)
 # @api_view(['GET'])
 # def get_attend_by_month(request):
 #     params = request.GET
@@ -460,6 +477,8 @@ def get_attend_statistical(request, staff_id):
 #     print(month)
 #     return Response("oke")
 from django.db.models import Count
+from django.db.models import F, ExpressionWrapper, DateTimeField, Sum,DurationField
+from datetime import datetime, timedelta
 @api_view(['GET'])
 def get_attend_statistical_by_month(request):
     params = request.GET
@@ -476,23 +495,35 @@ def get_attend_statistical_by_month(request):
         attends = attendance.objects.filter(date__month=month, date__year=year).values('employee_code')
 
         total_days_in_month = datetime(year, month + 1, 1).toordinal() - datetime(year, month, 1).toordinal()
-
-   
-        result = attends.annotate(total_days=Count('date')).values('employee_code', 'total_days')
-
+    
+        result = attends.annotate(
+            total_days=Count('date'),
+            total_hours=ExpressionWrapper(
+                Sum(F('time_out') - F('time_in')),
+                output_field=DurationField()
+            )
+        ).values('employee_code', 'total_days', 'total_hours')
         staff_data = Staff.objects.filter(employee_code__in=[attend['employee_code'] for attend in result]).values('first_name', 'last_name', 'img')
 
         response_data = []
         for attend in result:
             staff = staff_data.get(employee_code=attend['employee_code'])
+            total_hours = attend['total_hours']
+            if total_hours:
+                total_hours = total_hours.total_seconds() / 3600  # Convert timedelta to hours
+                total_hours = round(total_hours, 2)
             response_data.append({
                 'first_name': staff['first_name'],
                 'last_name': staff['last_name'],
                 'img': "/media/"+staff['img'],
-                'total_days': attend['total_days']
+                'total_days': attend['total_days'],
+                'total_hours': total_hours
             })
 
         return Response(response_data)
     else:
         return Response("no params", status=204)
-
+@api_view(['GET'])
+def get_attend_staff_statistical_by_month(request,staff_id):
+    print(staff_id)
+    Response("oke")
