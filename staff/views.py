@@ -464,7 +464,9 @@ def get_attend_statistical(request, staff_id):
                 formatted_data['total_hours'] = str(total_hours)
             return Response(formatted_data)
         else:
-            return Response("no data", status=400)
+            staff = Staff.objects.get(employee_code=staff_id)
+            serializer = StaffSerializer(staff)
+            return Response(serializer.data)
     else:
         return Response("no param", status=400)
 # @api_view(['GET'])

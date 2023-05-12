@@ -31,7 +31,5 @@ urlpatterns = [
 
      # path in nv 
 
-     path('attendance/<str:staff_id>/statisticalbymonth',
-          views.get_attend_staff_statistical_by_month,name='statistical_by_month'),    
     
 ]
