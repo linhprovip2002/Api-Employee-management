@@ -456,11 +456,13 @@ def get_attend_statistical(request, staff_id):
                     'time_in': obj['time_in'],
                     'time_out': obj['time_out']
                 }
-                formatted_data['activity_log'].append(activity)
+                formatted_data['activity_log'].insert(0,activity)
                 time_in = datetime.strptime(obj['time_in'], '%H:%M:%S.%f')
-                time_out = datetime.strptime(obj['time_out'], '%H:%M:%S.%f')
-                duration = time_out - time_in
-                total_hours += duration
+                time_out = obj['time_out']               
+                if(time_out is not None):
+                    time_out = datetime.strptime(obj['time_out'], '%H:%M:%S.%f')
+                    duration = time_out - time_in
+                    total_hours += duration
                 formatted_data['total_hours'] = str(total_hours)
             return Response(formatted_data)
         else:
